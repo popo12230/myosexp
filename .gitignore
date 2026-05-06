@@ -8,3 +8,4 @@ user/c/*.o
 user/build
 
 basicustb-os-checker/
+ustb-os-checker/

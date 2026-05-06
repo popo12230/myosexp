@@ -36,6 +36,18 @@ isize write(int fd, const void *buf, size_t count) {
     return syscall(SYSCALL_WRITE, (size_t)fd, (size_t)buf, count);
 }
 
+isize open(const char *path, int flags) {
+    return syscall(SYSCALL_OPEN, (size_t)path, (size_t)flags, 0);
+}
+
+isize close(int fd) {
+    return syscall(SYSCALL_CLOSE, (size_t)fd, 0, 0);
+}
+
+isize read(int fd, void *buf, size_t count) {
+    return syscall(SYSCALL_READ, (size_t)fd, (size_t)buf, count);
+}
+
 void exit(int code) {
     syscall(SYSCALL_EXIT, (size_t)code, 0, 0);
     while(1);
