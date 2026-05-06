@@ -102,7 +102,7 @@ impl TaskManager {
         let mut inner = self.inner.exclusive_access();
         let current = inner.current_task;
         //when suspend current task, and you want to call it again, you need to modify its TaskStatus
-
+        inner.tasks[current].task_status = TaskStatus::Ready; // 设置为Ready状态，以便可以被重新调度
     }
 
     /// Change the status of current `Running` task into `Exited`.
@@ -168,14 +168,22 @@ impl TaskManager {
     /// Get current task information
     /// Returns: (status, syscall_times)
     fn get_current_task_info(&self) -> Option<(usize, usize)> {
-        
-        None
+        let inner = self.inner.exclusive_access();
+        let current_task_no = inner.current_task;
+        let status = inner.tasks[current_task_no].task_status as usize;
+        let syscall_times = inner.syscall_count[current_task_no].syscall_count.len();
+        Some((status, syscall_times))
     }
 
     /// Get total syscall count for current task
     fn get_total_syscall_count(&self) -> usize {
-        
-        0
+        let inner = self.inner.exclusive_access();
+        let current_task_no = inner.current_task;
+        let mut total: usize = 0;
+        for (_, count) in inner.syscall_count[current_task_no].syscall_count.iter() {
+            total += count;
+        }
+        total
     }
 }
 

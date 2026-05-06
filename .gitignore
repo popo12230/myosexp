@@ -7,4 +7,5 @@ user/rust/Cargo.lock
 user/c/*.o
 user/build
 
-basic
+basickernel/ustb-os-checker/
+kernel/ustb-os-checker/
