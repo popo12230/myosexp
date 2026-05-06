@@ -12,3 +12,4 @@ user/c/*.o
 user/build
 
 basic
+kernel/ustb-os-checker/
