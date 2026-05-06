@@ -89,21 +89,56 @@ impl PageTable {
     }
     /// Find PageTableEntry by VirtPageNum, create a frame for a 4KB page table if not exist
     fn find_pte_create(&mut self, vpn: VirtPageNum) -> Option<&mut PageTableEntry> {
-        todo!("Lab 4: implement find_pte_create")
+        let idxs = vpn.indexes();
+        let mut ppn = self.root_ppn;
+        let mut result: Option<&mut PageTableEntry> = None;
+        for (i, &idx) in idxs.iter().enumerate() {
+            let pte = &mut ppn.get_pte_array()[idx];
+            if i == 2 {
+                // last level
+                result = Some(pte);
+                break;
+            }
+            if !pte.is_valid() {
+                // need to create a new page table
+                let frame = frame_alloc().unwrap();
+                *pte = PageTableEntry::new(frame.ppn, PTEFlags::V);
+                self.frames.push(frame);
+            }
+            ppn = pte.ppn();
+        }
+        result
     }
     /// Find PageTableEntry by VirtPageNum (read-only lookup, no creation)
     fn find_pte(&self, vpn: VirtPageNum) -> Option<&mut PageTableEntry> {
-        todo!("Lab 4: implement find_pte")
+        let idxs = vpn.indexes();
+        let mut ppn = self.root_ppn;
+        let mut result: Option<&mut PageTableEntry> = None;
+        for (i, &idx) in idxs.iter().enumerate() {
+            let pte = &mut ppn.get_pte_array()[idx];
+            if i == 2 {
+                // last level
+                result = Some(pte);
+                break;
+            }
+            if !pte.is_valid() {
+                return None; // Entry doesn't exist
+            }
+            ppn = pte.ppn();
+        }
+        result
     }
     /// set the map between virtual page number and physical page number
     #[allow(unused)]
     pub fn map(&mut self, vpn: VirtPageNum, ppn: PhysPageNum, flags: PTEFlags) {
-        todo!("Lab 4: implement map")
+        let pte = self.find_pte_create(vpn).unwrap();
+        *pte = PageTableEntry::new(ppn, flags | PTEFlags::V);
     }
     /// remove the map between virtual page number and physical page number
     #[allow(unused)]
     pub fn unmap(&mut self, vpn: VirtPageNum) {
-        todo!("Lab 4: implement unmap")
+        let pte = self.find_pte_create(vpn).unwrap();
+        *pte = PageTableEntry::empty(); // Reset the entry to empty
     }
     /// get the page table entry from the virtual page number
     pub fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
